@@ -10,7 +10,10 @@ end Adder;
 architecture Behavioral of Adder is
 begin
 	
-	AddOut <= AddIn + Increment;
+	process(AddIn, Increment)
+	begin
+		AddOut <= AddIn + Increment;
+	end process;
 
 end Behavioral;
 

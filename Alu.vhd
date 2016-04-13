@@ -12,7 +12,7 @@ end Alu;
 architecture Behavioral of Alu is
 
 begin
-process(AluOp)
+process(AluOp, Crs1, Crs2)
 	begin
 	case (AluOp) is 
 		when "000000" => --Add
