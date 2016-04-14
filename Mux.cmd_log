@@ -1,0 +1,1 @@
+vhdtdtfi -prj procesador -o /home/mauricio/Escritorio/procesador/Mux.vhi -module Mux -template /home/mauricio/Escritorio/universidad/semestre_VI/Lab_Electronica_Digital/14.7/ISE_DS/ISE//data/vhdlinst.tft -deleteonerror -lib work Mux.vhd 
