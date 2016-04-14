@@ -45,9 +45,9 @@ architecture Behavioral of Processor2 is
 	COMPONENT RegisterFile
 	PORT(
 		Reset : IN std_logic;
-		RegisterSource1 : IN std_logic_vector(5 downto 0);
-		RegisterSource2 : IN std_logic_vector(5 downto 0);
-		RegisterDestination : IN std_logic_vector(5 downto 0);
+		RegisterSource1 : IN std_logic_vector(4 downto 0);
+		RegisterSource2 : IN std_logic_vector(4 downto 0);
+		RegisterDestination : IN std_logic_vector(4 downto 0);
 		DataToWrite : IN std_logic_vector(31 downto 0);          
 		ContentRegisterSource1 : OUT std_logic_vector(31 downto 0);
 		ContentRegisterSource2 : OUT std_logic_vector(31 downto 0)
@@ -79,70 +79,73 @@ architecture Behavioral of Processor2 is
 		);
 	END COMPONENT;
 	
-	
-
+	signal nPCToPCAndAdder, AdderTonPC, PCToIM, MuxOutToAluCrs2, AluAluResultToRFDatatowrite, RFCrs1ToAluCrs1, 
+				RFCrs2ToMuxContentRegister, SignExtToMuxImmediate, IMOut : std_logic_vector(31 downto 0);
+	signal CUAluopToAluAluop: std_logic_vector(5 downto 0);
 begin
 
 	Inst_NextProgramCounter: ProgramCounter PORT MAP(
-		Pcin => ,
+		Pcin => AdderTonPC,
 		Clk => Clk,
 		Rst => Reset,
-		Pcout => 
+		Pcout => nPCToPCAndAdder
 	);
 	
 	Inst_ProgramCounter: ProgramCounter PORT MAP(
-		Pcin => ,
+		Pcin => nPCToPCAndAdder,
 		Clk => Clk,
 		Rst => Reset,
-		Pcout => 
+		Pcout => PCToIM
 	);
 	
 	Inst_Adder: Adder PORT MAP(
-		AddIn => ,
-		Increment => ,
-		AddOut => 
+		AddIn => nPCToPCAndAdder,
+		Increment => "00000000000000000000000000000001",
+		AddOut => AdderTonPC
 	);
 	
 	Inst_InstructionMemory: InstructionMemory PORT MAP(
-		Address => ,
+		Address => PCToIM,
 		Reset => Reset,
-		OutInstruction => 
+		OutInstruction => IMOut
 	);
 	
 	Inst_ControlUnity: ControlUnity PORT MAP(
-		Op => ,
-		Op3 => ,
-		AluOp => 
+		Op => IMOut(31 downto 30),
+		Op3 => IMOut(24 downto 19),
+		AluOp => CUAluopToAluAluop
 	);
 	
 	Inst_RegisterFile: RegisterFile PORT MAP(
 		Reset => Reset,
-		RegisterSource1 => ,
-		RegisterSource2 => ,
-		RegisterDestination => ,
-		DataToWrite => ,
-		ContentRegisterSource1 => ,
-		ContentRegisterSource2 => 
+		RegisterSource1 => IMOut(18 downto 14),
+		RegisterSource2 => IMOut(4 downto 0),
+		RegisterDestination => IMOut(29 downto 25),
+		DataToWrite => AluAluResultToRFDatatowrite,
+		ContentRegisterSource1 => RFCrs1ToAluCrs1,
+		ContentRegisterSource2 => RFCrs2ToMuxContentRegister
 	);
 	
 	Inst_SignExtensionUnit: SignExtensionUnit PORT MAP(
-		Imm13 => ,
-		Sign_Ext => 
+		Imm13 => IMOut(12 downto 0),
+		Sign_Ext => SignExtToMuxImmediate
 	);
 	
 	Inst_Mux: Mux PORT MAP(
-		ContentRegister => ,
-		Immediate => ,
-		ControlSignal => ,
-		MuxOut => 
+		ContentRegister => RFCrs2ToMuxContentRegister,
+		Immediate => SignExtToMuxImmediate,
+		ControlSignal => IMOut(13),
+		MuxOut => MuxOutToAluCrs2
 	);
 	
 	Inst_Alu: Alu PORT MAP(
-		Crs1 => ,
-		Crs2 => ,
-		AluOp => ,
-		AluResult => 
+		Crs1 => RFCrs1ToAluCrs1,
+		Crs2 => MuxOutToAluCrs2,
+		AluOp => CUAluopToAluAluop,
+		AluResult => AluAluResultToRFDatatowrite
 	);
+	
+	Result <= AluAluResultToRFDatatowrite;
 
 end Behavioral;
 
